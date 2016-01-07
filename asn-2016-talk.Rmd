@@ -1,0 +1,209 @@
+---
+title: "Adaptation to changing environments across real geographies"
+author: "Peter Ralph"
+date: "January 13, 2016"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(self.contained=TRUE)
+```
+
+
+
+Climate change
+--------------
+
+*Rapid* climate change:
+
+- occurring over tens of generations
+- different environment $\Rightarrow$ strong selective pressure
+
+Ecological dynamics important,
+but today, just thinking about the population genetics.
+
+
+Questions
+---------
+
+1.  Can species adapt? (maintaining something like their present range)
+
+2.  If so, how will genetic diversity be affected?
+
+3.  How will independently arisen adaptations interact?
+
+
+More questions
+--------------
+
+1.  Is there existing variation for the selected trait(s)?
+
+    - genetic load?
+    - due to local adaptation?
+    - temporal fluctuations?
+    - balancing selection?
+
+2.  What is the genetic architecture of the trait?
+
+    - mutational target size?
+    - interactions?
+    - dominance?
+    - pleiotropy?
+
+3.  Can adaptations spread?
+
+    - e.g., from south to north
+    - or from locations of existing variants
+
+
+Population genetics parameters
+------------------------------
+
+1.  population size
+
+    - availability of standing deleterious variation
+    - influx of new mutations
+
+2.  strength of selection
+
+    - probability of establishment of rare variants
+    - rate of spread of adaptive variants
+
+3.  rate of genetic drift
+
+    - rate of local loss of variation
+    - probability of establishment of rare variants
+
+
+Geography affects
+-----------------
+
+(Really, geography ${}+{}$ dispersal ${}+{}$ habitat dynamics.)
+
+- Rate of drift (inbreeding)
+
+- Speed of spread
+
+- Pre-existing adaptations
+
+
+
+Rate of drift
+-------------
+
+$$ N_\text{loc} \propto \frac{ \#\{ \text{ individuals* within 1$\sigma } \} }{ \nu }, $$
+
+where 
+
+-  $\sigma$ is the **dispersal distance**
+-  *individuals* are haploid,
+-  $\nu = N/N_e$, the strength of drift.
+
+The *probability of establishment* 
+in a large population is roughly
+$$ p_\text{estab} \approx 2 s / \nu . $$
+
+If $s < 1/N_\text{loc}$, *local inbreeding* 
+may reduces $p_\text{estab}$.
+
+**picture of amount of habitat within one sigma**
+
+
+Speed of spread
+---------------
+
+Alleles that are advantageous when rare
+spread, like *wildfire*. 
+(a "pushed" wave)
+
+**picture**
+
+**Continuous:**
+
+- speed: $\sigma \sqrt{2s}$ (Fisher/KPP)
+    $s$ is *growth rate when rare*
+
+- leptokurtic dispersal: patchy growth, accelerates
+
+    **Oskar**
+
+- slowed by drift and 
+    - *tortuosity*: ratio of length of curve to distance between its ends
+
+    **Nelson**
+
+
+**Patchy:**
+
+- spread governed by rate of migrants (sparks)
+    ${} \times p_\text{estab}$
+
+- if growth rate in gaps is $1-m$,
+    rate of migrants $\propto e^{-x m/\sigma}$
+
+    **pgen**
+
+- if gaps are totally uninhabitable, depends on *long distance dispersal*
+
+
+Both depend critically on *dispersal* mechanism.
+
+
+
+Mojave habitats: Vegetation classification
+---------------
+
+**image**
+
+
+Mojave habitats: Environmental niche models
+---------------
+
+- Joshua tree
+- others
+
+
+Neighborhood size
+-----------------
+
+volume versus radius
+
+
+Speed of spread
+---------------
+
+speed versus *s* in different habitats
+
+
+Probability of establishment
+----------------------------
+
+prob versus $s$ in different habitats
+
+
+
+Conclusions
+-----------
+
+Wildly varying predictions, depending on:
+
+- genetic architecture
+- population density
+- what is "habitat"
+- long-distance dispersal
+
+What's clear:
+
+- fast adaptation can't be from single, new mutations
+- truly isolated pockets are on their own (and have been already)
+
+
+Thanks!
+-------
+
+- Erik Lundgren (USC)
+- Julie Evens (CNPS)
+- Greg Suba (CNPS)
+- R's GIS tools: `sp`, `raster`, `rgeos`, ...
+
+An R package: github.com/petrelharp/landsim
+

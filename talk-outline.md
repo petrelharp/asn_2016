@@ -36,3 +36,10 @@ Points to cover
 
 
 Speed of adaptation : Race against time/change
+
+How do adaptations cross gaps?  Options:
+    - they don't
+    - rare, long-distance dispersal (can't be that rare)
+    - living for a bit in poor, intervening habitat
+    - gaps don't stay gaps for long
+
