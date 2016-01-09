@@ -165,11 +165,11 @@ if (!file.exists("desert_veg_central_small_raster.grd")) {
     rasterveg <- do.call( stack, rz )
     # rasterveg <- rasterize(smallveg,raster(extent(smallveg),res=50),"LABEL_1",getCover=TRUE)
     values(rasterveg) <- values(rasterveg)/100
-    writeRaster(rasterveg, file="desert_veg_central_small_raster.grd")
+    names(rasterveg) <- levels(smallveg$LABEL_1)
+    save(rasterveg, file="desert_veg_central_small_raster.RData")
 } else {
-    rasterveg <- raster("desert_veg_central_small_raster.grd")
+    load("desert_veg_central_small_raster.RData")
 }
-names(rasterveg) <- levels(smallveg$LABEL_1)
 ```
 ```{r setup_demog, echo=FALSE, cache=TRUE}
 demog <- demography(
@@ -235,8 +235,9 @@ names(wildfire.sims) <- wildfire.vegtypes
 ```
 ```{r animate_wildfire, cache=TRUE, depends="run_sim"}
 for (vegtype in names(wildfire.sims)) {
-    plot.simulation(wildfire.sims[[vegtype]]$sim,wildfire.sims[[vegtype]]$pop,
-                animate=paste("spatial-sweep-",gsub(" ","_",vegtype),"wash.mp4",sep=''))
+    plot.simulation( wildfire.sims[[vegtype]]$sim, wildfire.sims[[vegtype]]$pop,
+                animate=paste("spatial-sweep-",gsub(" ","_",vegtype),".mp4",sep=''),
+                duration=20 )
 }
 ```
 
@@ -250,8 +251,34 @@ for (vegtype in names(wildfire.sims)) {
 
 ------------------
 
-```{r show_speeds}
-
+```{r show_speeds, cache=TRUE, depends="run_sim", include=FALSE}
+vegtype <- "Low Elevation Wash System"
+speeds <- list()
+speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
+        matplot( sim$summary.times, sim$summaries[["radius"]][,c("aA","AA")], type='l', lty=1:2, col=hcols[vegtype],
+                xlab="generation", main='radius', ylab='distance (m)', xlim=c(0,500) )
+        legend( "bottomright", legend=c(pop$genotypes[-1],names(wildfire.sims)), lty=c(1:2,1,1), 
+               col=c("black","black",hcols[names(wildfire.sims)]) )
+        AA.lims <- c(1.2,0.8)*range(sim$summaries[["radius"]][,"AA"],finite=TRUE)
+        AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
+                              & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
+        AA.speed <- diff( sim$summaries[["radius"]][range(AA.usethese),"AA"] ) / diff( sim$summary.times[range(AA.usethese)] )
+        points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
+        abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        AA.speed
+    } )
+vegtype <- "Creosote"
+speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
+        matlines( sim$summary.times, sim$summaries[["radius"]][,c("aA","AA")], type='l', lty=1:2, col=hcols[vegtype] )
+        AA.lims <- c(1.2,0.8)*range(sim$summaries[["radius"]][,"AA"],finite=TRUE)
+        AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
+                              & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
+        AA.speed <- diff( sim$summaries[["radius"]][range(AA.usethese),"AA"] ) / diff( sim$summary.times[range(AA.usethese)] )
+        points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
+        abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        AA.speed
+    } )
+speeds
 ```
 
 
@@ -305,8 +332,17 @@ Mojave habitats: Environmental niche models
 Neighborhood size
 -----------------
 
-volume versus radius
-
+proportion of neighborhood occupied
+```{r vol_versus_radius, echo=FALSE, cache=TRUE}
+source("habitat-shapes.R")
+mean.areas <-  sapply( central.mojave.area.results, colMeans )
+area.units <- 1e4 # ha
+layout(t(1:2),width=c(3,1))
+matplot(central.mojave.radii, area.units*mean.areas/(pi*central.mojave.radii^2), type='l', log='x', ylab="proportion of circle covered", xlab="radius (m)")
+opar <- par(mar=c(par("mar"),0)[c(1,5,3,5)])
+plot(0,xaxt='n',yaxt='n',xlab='',ylab='',type='n')
+legend("topleft",legend=colnames(mean.areas),lty=1:5,col=1:6)
+```
 
 Speed of spread
 ---------------
