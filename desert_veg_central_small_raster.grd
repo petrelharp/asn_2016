@@ -1,0 +1,25 @@
+[general]
+creator=R package 'raster'
+created=2016-01-08 17:39:25
+[georeference]
+nrows=213
+ncols=266
+xmin=354660.90906967
+ymin=-273167.61963165
+xmax=381260.90906967
+ymax=-251867.61963165
+projection=+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0
+[data]
+datatype=FLT8S
+byteorder=little
+nbands=8
+bandorder=BIL
+minvalue=0:0:0:0:0:0:0:0
+maxvalue=1:1:1:1:1:1:1:0.5
+nodatavalue=-1.7e+308
+[legend]
+legendtype=
+values=
+color=
+[description]
+layername=Blackbrush:Creosote:Creosote.Brittlebush:Desert.Holly:Joshua.Tree:Low.Elevation.Wash.System:Mid.Elevation.Wash.System:Mojave.Yucca

@@ -105,8 +105,51 @@ $$ p_\text{estab} \approx 2 s / \nu . $$
 If $s < 1/N_\text{loc}$, *local inbreeding* 
 may reduces $p_\text{estab}$.
 
-**picture of amount of habitat within one sigma**
+```{r setup_habitat_one_sigma, echo=FALSE, cache=TRUE}
+library(raster); library(rgeos); library(landsim)
+if (!file.exists("desert_veg_central_small.RData")) {
+    layer.dir <- "/home/peter/projects/patchy-landscapes/layers"
+    vegmap <- readOGR(file.path(layer.dir,"desert_veg/central","ds166"))
+    this.ex <- c(354660.90906967, 381245.239994035, -273140.670781638, -251867.619631655)
+    smallveg <- crop(vegmap,this.ex)
+    source(file.path(layer.dir,"layer_utils.R",chdir=TRUE))
+    counties <- get_counties(smallveg)
+    elev <- get_dem(smallveg)
+    shade <- get_elev(smallveg)
+    smallveg$LABEL_1 <- droplevels(smallveg$LABEL_1)
+    save(smallveg,counties,elev,shade,file="desert_veg_central_small.RData")
+} else {
+    load("desert_veg_central_small.RData")
+}
 
+hcols <- c( Blackbrush="#FF9400FF", Creosote="#FFC500FF", 'Creosote-Brittlebush'="#FFF700FF", 'Desert Holly'="#D6FF00FF", 'Joshua Tree'="#00FF52FF", 'Low Elevation Wash System'="#00E6FFFF", 'Mid Elevation Wash System'="#0052FFFF", 'Mojave Yucca'="#1000FFFF" )
+hcols <- hcols[match(levels(smallveg$LABEL_1),names(hcols))]
+```
+```{r habitat_one_sigma, echo=FALSE, cache=TRUE, depends="setup_habitat_one_sigma"}
+
+refpoint.list <- list( 
+       "Creosote" = cbind(x=369276.5, y=-260411.1),
+       "Low Elevation Wash System" = cbind(x=365959.7, y=-260357.6)
+   )
+refcol <- c( Creosote="red", "Low Elevation Wash System"="blue" )
+radii <- c(1000,5000)
+
+layout(t(1:2))
+par(mar=c(0,0,0,0)+.5)
+for (vegtype in names(refpoint.list)) {
+    thisveg <- subset( smallveg, LABEL_1==vegtype )
+    # refpoints <- spsample( thisveg, n=1, type='random' )
+    refpoints <- SpatialPoints( refpoint.list[vegtype], proj4string=CRS(proj4string(smallveg)) )
+    refcircles <- make_circles( refpoints[rep(1,length(radii))], radii=radii )
+    habcircles <- gIntersection( refcircles, crop(thisveg,3*extent(refcircles)), byid=c(TRUE,FALSE) )
+
+    plot( smallveg, col=adjustcolor(hcols[smallveg$LABEL_1],0.2) ) #, add=TRUE )
+    plot( habcircles, col=adjustcolor(refcol[vegtype],0.5), add=TRUE, border=NA )
+    lines(refcircles, lty=2 )
+    points(refpoints,pch="*", col='red')
+}
+
+```
 
 Speed of spread
 ---------------
@@ -115,7 +158,104 @@ Alleles that are advantageous when rare
 spread, like *wildfire*. 
 (a "pushed" wave)
 
-**picture**
+```{r setup_wildfire_spread, echo=FALSE, cache=TRUE}
+if (!file.exists("desert_veg_central_small_raster.grd")) {
+    z <- lapply( levels(smallveg$LABEL_1), function (vt) { gUnaryUnion( subset(smallveg,LABEL_1==vt) ) } )
+    rz <- lapply(z, function (x) { rasterize(x, raster(extent(smallveg),res=100), getCover=TRUE ) } )
+    rasterveg <- do.call( stack, rz )
+    # rasterveg <- rasterize(smallveg,raster(extent(smallveg),res=50),"LABEL_1",getCover=TRUE)
+    values(rasterveg) <- values(rasterveg)/100
+    writeRaster(rasterveg, file="desert_veg_central_small_raster.grd")
+} else {
+    rasterveg <- raster("desert_veg_central_small_raster.grd")
+}
+names(rasterveg) <- levels(smallveg$LABEL_1)
+```
+```{r setup_demog, echo=FALSE, cache=TRUE}
+demog <- demography(
+        prob.seed = 0.2, fecundity = 100,
+        prob.germination = vital( 
+                 function (N, ...) {
+                     out <- r0 / ( 1 + rowSums(N)/carrying.capacity )
+                     return( cbind( aa=out, aA=s*out, AA=s^2*out ) )
+                 },
+                 r0 = 0.01,  s = 1.5 ),
+        prob.survival = 0.9,
+        pollen.migration = migration(
+                 kern = function (x) { exp(-sqrt(x)) },
+                 sigma = 300, radius = 1200, normalize = NULL ),
+        seed.migration = migration(
+                 kern = "gaussian", sigma = 100,
+                 radius = 1200, normalize = 1 ),
+        genotypes = c("aa","aA","AA")
+    )
+```
+```{r run_sim, echo=FALSE, cache=TRUE, depends=c("setup_wildfire_spread","setup_habitat_one_sigma")}
+wildfire.vegtypes <- c("Low Elevation Wash System","Creosote")
+mutloc <- list( center=SpatialPoints( cbind(x=358709.2, y=-258082.9), proj4string=CRS(proj4string(smallveg)) ) )
+wildfire.sims <- lapply( wildfire.vegtypes,  function (vegtype) {
+        habitat <- rasterveg[[make.names(vegtype)]]
+        carrying.capacity <- 120 * prod(res(habitat))/270^2  # estimated from google maps near desert queen mine
+        habitable <- (!is.na(values(habitat)) & values(habitat)>0)
+        pop <- population( 
+                          habitat = habitat,
+                          # accessible = !is.na(values(habitat)),
+                          accessible = habitable,
+                          habitable = habitable,
+                          genotypes = c("aa","aA","AA"),
+                          carrying.capacity = carrying.capacity,
+                          N = cbind( aa=rpois(sum(habitable),carrying.capacity),
+                                     aA=0, AA=0 )
+                     )
+        demog <- setup_demography( demog, pop )
+        # summary functions
+        # distance
+        dists <- pointDistance( mutloc$center, xyFromCell(pop$habitat,which(pop$habitable)), lonlat=FALSE )
+        # distance to the mutation center for each habitable cell
+        volume_fun <- function (N) { colSums(N>0) }
+        # will compute 'dists' below
+        radius_fun <- function (N) { apply( N, 2, function (x) { suppressWarnings( max( dists[ x>0 ] ) ) } ) }
+        summary.funs <- list( totals=function(N){colSums(N)}, volume=volume_fun, radius=radius_fun)
+        # burn-in
+        sim <- simulate_pop( pop, demog, times=c(0,100) )
+        pop$N[] <- sim$N[,,2]
+        mutloc$cell.number <- match( cellFromXY( habitat, mutloc$center ), which(habitable) )
+        for (ntries in 1:100) {
+            pop <- set_N( pop, i=which(pop$habitable), j="aA", 
+                     value=ifelse(1:nrow(pop$N)==mutloc$cell.number,3,0) )
+            sim <- simulate_pop( pop, demog, times=seq(0,100,length.out=11),
+                             summaries= summary.funs )
+            total.aA <- sim$summaries[[1]][nrow(sim$summaries[[1]]),"aA"]
+            if ( total.aA>0 ) { break }
+        }
+        sim <- extend_simulation( sim, pop, demog, times=seq(sim$t,1000,length.out=101), summaries=summary.funs )
+        return(list(pop=pop,sim=sim))
+    } )
+names(wildfire.sims) <- wildfire.vegtypes
+```
+```{r animate_wildfire, cache=TRUE, depends="run_sim"}
+for (vegtype in names(wildfire.sims)) {
+    plot.simulation(wildfire.sims[[vegtype]]$sim,wildfire.sims[[vegtype]]$pop,
+                animate=paste("spatial-sweep-",gsub(" ","_",vegtype),"wash.mp4",sep=''))
+}
+```
+
+------------------
+
+![spatial-sweep-Low_Elevation_Wash_System.mp4]
+
+------------------
+
+![spatial-sweep-Creosote.mp4]
+
+------------------
+
+```{r show_speeds}
+
+```
+
+
+------------------
 
 **Continuous:**
 
