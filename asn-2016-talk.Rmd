@@ -213,7 +213,6 @@ wildfire.sims <- lapply( wildfire.vegtypes,  function (vegtype) {
         dists <- pointDistance( mutloc$center, xyFromCell(pop$habitat,which(pop$habitable)), lonlat=FALSE )
         # distance to the mutation center for each habitable cell
         volume_fun <- function (N) { colSums(N>0) }
-        # will compute 'dists' below
         radius_fun <- function (N) { apply( N, 2, function (x) { suppressWarnings( max( dists[ x>0 ] ) ) } ) }
         summary.funs <- list( totals=function(N){colSums(N)}, volume=volume_fun, radius=radius_fun)
         # burn-in
@@ -349,6 +348,33 @@ Speed of spread
 
 speed versus *s* in different habitats
 
+```{r habitat_speeds, echo=FALSE, cache=TRUE}
+# provides speed.results:  a list, each component has
+#     svals : selection coefficients
+#     sumtabs : list of the same length as svals giving the results of a simulation with the corresponding selection coefficient
+source("habitat-speeds.R")
+speedfun <- function (sumtab) {
+    # returns (x0,x1,y0,y1,(y1-y0)/(x1-x0))
+    AA.lims <- c(1.2,0.8)*range(sumtab[,"radius_AA"],finite=TRUE)
+    AA.usethese <- which( ( sumtab[,"radius_AA"] > AA.lims[1] ) 
+                          & ( sumtab[,"radius_AA"] < AA.lims[2] ) )
+    out <- if (length(AA.usethese)>1) {
+        AA.speed <- diff( sumtab[range(AA.usethese),"radius_AA"] ) / diff( sumtab[range(AA.usethese),"t"] )
+        c(  sumtab[range(AA.usethese),"t"], sumtab[range(AA.usethese),"radius_AA"], AA.speed )
+    } else { rep(NA,5) }
+    names(out) <- c("x0","x1","y0","y1","speed")
+    out
+}
+speeds <- lapply( speed.results, function (ss) { cbind( s=ss$svals, t(sapply( ss$sumtabs, speedfun )) ) } )
+speeds <- data.frame( habitat=rep(names(speeds),sapply(speeds,nrow)), do.call( rbind, speeds ) )
+```
+
+Naive prediction of speed is $\sigma \sqrt{2s} = 180$m/gen.
+```{r speed.summary, echo=FALSE}
+with( speeds, plot( jitter(s), speed,col=habitat, xlab="s", ylab="speed", pch=20 ) )
+with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( speed, list(s,habitat), mean, na.rm=TRUE ) ), lty=1 ) )
+legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(speeds$habitat) )
+```
 
 Probability of establishment
 ----------------------------
