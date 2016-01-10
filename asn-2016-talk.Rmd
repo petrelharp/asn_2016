@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
            error=FALSE )
 ```
 
-
+# Adaptation to rapid climate change
 
 Climate change
 --------------
@@ -25,14 +25,15 @@ Climate change
 - occurring over tens of generations
 - different environment $\Rightarrow$ strong selective pressure
 
-Ecological dynamics important,
-but today, just thinking about the population genetics.
+*This talk:* population genetics considerations.
+
+*Spoiler alert:* ecological dynamics are important.
 
 
 Questions
 ---------
 
-1.  Can species adapt? (maintaining something like their present range)
+1.  Can species adapt to maintain something like their present range?
 
 2.  If so, how will genetic diversity be affected?
 
@@ -41,28 +42,33 @@ Questions
 
 --------------
 
-1.  Is there existing variation for the selected trait(s)?
+**Is there existing variation for the selected trait(s)?**
 
-    - genetic load?
-    - due to local adaptation?
-    - temporal fluctuations?
-    - balancing selection?
+- genetic load?
+- due to local adaptation?
+- temporal fluctuations?
+- balancing selection?
 
-2.  What is the genetic architecture of the trait?
+--------------
 
-    - mutational target size?
-    - interactions?
-    - dominance?
-    - pleiotropy?
+**What is the genetic architecture of the trait?**
 
-3.  Can adaptations spread?
+- mutational target size?
+- interactions?
+- dominance?
+- pleiotropy?
 
-    - e.g., from south to north
-    - or from locations of existing variants
+--------------
+
+**Can adaptations spread?**
+
+- with moving environmental gradients
+- or from locations of existing variants
 
 
-Population genetics parameters
 ------------------------------
+
+**Population genetics wants to know:**
 
 1.  population size
 
@@ -92,6 +98,7 @@ Geography affects
 - Pre-existing adaptations
 
 
+# Population genetics considerations
 
 Probability of establishment
 ----------------------------
@@ -115,10 +122,19 @@ where
 -  *individuals* are haploid,
 -  $\nu = N/N_e$, the strength of drift.
 
+Local heterozygosity is
+$$ H_0 \propto \frac{N_\text{loc}}{C + N_\text{loc}}, $$
+where $C$ depends on mutation rate and geometry.
+
+(Barton, Depaulis, & Etheridge)
+
 
 -----------------
 
-```{r setup_habitat_one_sigma, echo=FALSE, cache=2}
+$N_\text{loc}$ at different scales depends on population density
+and *amount of nearby habitat:*
+
+```{r setup_habitat_one_sigma, echo=FALSE, cache=2, fig.height=0.7*fig.dim}
 library(raster); library(rgeos); library(landsim)
 if (!file.exists("desert_veg_central_small.RData")) {
     layer.dir <- "/home/peter/projects/patchy-landscapes/layers"
@@ -170,6 +186,24 @@ Speed of spread
 Alleles that are advantageous when rare
 spread, like *wildfire*. 
 (a "pushed" wave)
+
+**Continuous habitats**
+
+- speed: $\sigma \sqrt{2s}$ (Fisher/KPP)
+    * $s$ is *growth rate when rare*
+    * takes 1-10 generations to move a dispersal distance
+
+- leptokurtic dispersal: patchy, accelerating (XX, Hallatschek)
+
+- slowed by drift
+
+---------
+
+**Huygens principle:** the wave has to go around barriers (Nelson)
+
+- *tortuosity*: ratio of length of curve to distance between its ends
+
+![Huygens principle](huygens.png)
 
 ```{r setup_wildfire_spread, echo=FALSE, cache=2}
 if (!file.exists("desert_veg_central_small_raster.RData")) {
@@ -305,57 +339,109 @@ speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
 ```
 
 
-------------------
-
-**Continuous habitats**
-
-- speed: $\sigma \sqrt{2s}$ (Fisher/KPP)
-    $s$ is *growth rate when rare*
-
-- leptokurtic dispersal: patchy growth, accelerates
-
-    **Oskar**
-
-- slowed by drift and 
-    - *tortuosity*: ratio of length of curve to distance between its ends
-
-    **Nelson**
 
 -------------------
 
-**Patchy habitats**
+**Spread in patchy habitats**
 
-- spread governed by rate of migrants (sparks)
+- spread governed by arrival of migrants
     ${} \times p_\text{estab}$
 
-- if growth rate in gaps is $1-m$,
-    rate of migrants $\propto e^{-x m/\sigma}$
+- if gaps are totally uninhabitable (sparks carried by wind),
+    depends on *long distance dispersal*
 
-    **pgen**
+-------------------
 
-- if gaps are totally uninhabitable, depends on *long distance dispersal*
 
+- if growth rate in gaps is $1-m$ (flammable but fire dies out)
+    rate of migrant families is 
+
+    $$\propto e^{-x \sqrt{2m}/\sigma}$$
+
+![Spread between patches](sim-transit-cropped.png)
 
 Both depend critically on *dispersal* mechanism.
 
 
+# Mojave Desert habitats
 
-Mojave habitats: Vegetation classification
+------------
+
+
+![http://databasin.org/datasets/0a419342ec904b3c8fc710003f52ebe0](databasin-screenshot.png){ height=6in }
+
+Cal DFG; Todd Keeler-Wolf, CNPS
+
 ---------------
 
-**image**
+Zoomed-in (NVCS macrogroup):
 
+```{r veg_chunk, echo=FALSE, fig.height=0.8*fig.dim}
+layout(t(1:2),width=c(2.6,1))
+par(mar=c(2,2,0,0)+.1)
+opar <- par(mar=c(par("mar"),0)[c(1,5,3,5)])
+plot(smallveg,col=hcols[smallveg$LABEL_1],border='black')
+axis(1:2)
+plot(0,xaxt='n',yaxt='n',xlab='',ylab='',type='n',bty='n')
+legend("topleft",legend=levels(smallveg$LABEL_1), fill=hcols[levels(smallveg$LABEL_1)], cex=0.75, bty='n')
+par(opar)
+```
 
-Mojave habitats: Environmental niche models
 ---------------
 
-- Joshua tree
-- others
+**Environmental niche models:** (Bren school, UCSB)
 
+```{r niche_plot, echo=FALSE}
+if (FALSE) { # do this elsewhere
+    x <- raster("cleaned/Yucca_brevifolia_broad_extent_avg_cleaned.tif")
+    y <- raster("cleaned/Eschscholzia_minutiflora_ssp_twisselmannii_broad_extent_avg_cleaned.tif")
+    elev <- get_elev( raster(c(1.4,1)*extent(x), crs=CRS(proj4string(x))) )
+    counties <- get_counties( raster(c(1.4,1)*extent(x), crs=CRS(proj4string(x))) )
+    
+    png(file="niche-models.png",width=6*180,height=3*180,pointsize=10,res=180)
+    layout(t(1:2))
+    par(mar=c(0,0,2,0)+0.2)
+    plot(elev,col=grey(seq(0.5,1,length.out=101)),legend=FALSE,main="Yucca brevifolia", xaxt='n', yaxt='n')
+    plot(x,add=TRUE,legend=FALSE,col='red')
+    lines(counties)
+    plot(elev,col=grey(seq(0.5,1,length.out=101)),legend=FALSE, main="Eschscholzia minutiflora", sub="ssp twisselmannii", xaxt='n', yaxt='n')
+    plot(y,add=TRUE,legend=FALSE,col='red')
+    lines(counties)
+    dev.off()
+}
+```
+
+![Niche models](niche-models.png)
 
 -----------------
 
 **Proportion of neighborhood occupied:**
+
+```{r habitat_one_sigma_again, echo=FALSE, cache=2, depends="setup_habitat_one_sigma"}
+refpoint.list <- list( 
+       "Creosote" = cbind(x=369276.5, y=-260411.1),
+       "Low Elevation Wash System" = cbind(x=365959.7, y=-260357.6)
+   )
+refcol <- c( Creosote="red", "Low Elevation Wash System"="blue" )
+radii <- c(1000,5000)
+layout(t(1:2))
+par(mar=c(0,0,0,0)+.5)
+for (vegtype in names(refpoint.list)) {
+    thisveg <- subset( smallveg, LABEL_1==vegtype )
+    # refpoints <- spsample( thisveg, n=1, type='random' )
+    refpoints <- SpatialPoints( refpoint.list[vegtype], proj4string=CRS(proj4string(smallveg)) )
+    refcircles <- make_circles( refpoints[rep(1,length(radii))], radii=radii )
+    habcircles <- gIntersection( refcircles, crop(thisveg,3*extent(refcircles)), byid=c(TRUE,FALSE) )
+    plot( smallveg, col=adjustcolor(hcols[smallveg$LABEL_1],0.2) ) #, add=TRUE )
+    plot( habcircles, col=adjustcolor(refcol[vegtype],0.5), add=TRUE, border=NA )
+    lines(refcircles, lty=2 )
+    points(refpoints,pch="*", col='red')
+}
+```
+
+
+-----------------
+
 
 ```{r vol_versus_radius, echo=FALSE, cache=2, fig.width=1.8*fig.dim}
 source("habitat-shapes.R")
@@ -409,6 +495,7 @@ legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(spe
 source("establishment-probs.R") # provides establishment.probs
 pestabs <- data.frame( habitat=rep(names(establishment.probs),sapply(establishment.probs,nrow)),
         do.call( rbind, establishment.probs ) )
+par(mar=c(4,4,1,1)+.1)
 plot(pestabs$s, pestabs$p_estab, col=pestabs$habitat, xlab="s", ylab="prob of establishment", pch=20)
 legend("topleft",pch=20,legend=levels(pestabs$habitat),cex=0.75,col=1:nlevels(pestabs$habitat))
 for (k in seq_along(establishment.probs)) {
@@ -417,8 +504,10 @@ for (k in seq_along(establishment.probs)) {
 ```
 
 
+# Conclusions
 
-Conclusions
+
+
 -----------
 
 Wildly varying predictions, depending on:

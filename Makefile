@@ -65,3 +65,16 @@ SLIDES_OPTS = $(REVEALJS_OPTS)
 %.knitr.html : %.md
 	### knitr::knit2html()
 	cd $$(dirname $<); Rscript -e 'knitr::knit2html(basename("$<"),output=basename("$@"))'
+
+### Images
+
+%.png : %.pdf
+	convert -density 300 $< -flatten $@
+
+%.pdf : %.ink.svg
+	inkscape $< --export-pdf=$@
+
+%.pdf : %.svg
+	inkscape $< --export-pdf=$@
+
+
