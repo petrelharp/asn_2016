@@ -159,7 +159,7 @@ spread, like *wildfire*.
 (a "pushed" wave)
 
 ```{r setup_wildfire_spread, echo=FALSE, cache=TRUE}
-if (!file.exists("desert_veg_central_small_raster.grd")) {
+if (!file.exists("desert_veg_central_small_raster.RData")) {
     z <- lapply( levels(smallveg$LABEL_1), function (vt) { gUnaryUnion( subset(smallveg,LABEL_1==vt) ) } )
     rz <- lapply(z, function (x) { rasterize(x, raster(extent(smallveg),res=100), getCover=TRUE ) } )
     rasterveg <- do.call( stack, rz )
@@ -190,7 +190,7 @@ demog <- demography(
         genotypes = c("aa","aA","AA")
     )
 ```
-```{r run_sim, echo=FALSE, cache=TRUE, depends=c("setup_wildfire_spread","setup_habitat_one_sigma")}
+```{r run_sim, echo=FALSE, cache=TRUE, depends=c("setup_wildfire_spread","setup_habitat_one_sigma","setup_demog")}
 wildfire.vegtypes <- c("Low Elevation Wash System","Creosote")
 mutloc <- list( center=SpatialPoints( cbind(x=358709.2, y=-258082.9), proj4string=CRS(proj4string(smallveg)) ) )
 wildfire.sims <- lapply( wildfire.vegtypes,  function (vegtype) {
@@ -369,7 +369,7 @@ speeds <- lapply( speed.results, function (ss) { cbind( s=ss$svals, t(sapply( ss
 speeds <- data.frame( habitat=rep(names(speeds),sapply(speeds,nrow)), do.call( rbind, speeds ) )
 ```
 
-Naive prediction of speed is $\sigma \sqrt{2s} = 180$m/gen.
+Naive prediction has $\sigma=250$.
 ```{r speed.summary, echo=FALSE}
 with( speeds, plot( jitter(s), speed,col=habitat, xlab="s", ylab="speed", pch=20 ) )
 with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( speed, list(s,habitat), mean, na.rm=TRUE ) ), lty=1 ) )
