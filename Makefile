@@ -14,6 +14,7 @@ else
 endif
 
 PANDOC_OPTS = --mathjax=$(MATHJAX)?config=TeX-AMS-MML_HTMLorMML --standalone
+PANDOC_EXTENSIONS = +link_attributes
 # optionally add in a latex file with macros
 MACROS_FILE = macros.tex
 ifeq ($(wildcard $(MACROS_FILE)),)
@@ -27,7 +28,7 @@ endif
 	cd $$(dirname $<); Rscript -e 'rmarkdown::render(basename("$<"),output_file=basename("$@"))'
 
 %.html : %.md
-	pandoc -o $@ $(PANDOC_OPTS) $<
+	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(PANDOC_OPTS) $<
 
 %.md : %.Rmd
 	cd $$(dirname $<); Rscript -e 'knitr::knit(basename("$<"),output=basename("$@"))'
@@ -39,16 +40,16 @@ S5_OPTS = -t s5
 SLIDES_OPTS = $(REVEALJS_OPTS)
 
 %.slides.html : %.md
-	pandoc -o $@ $(SLIDES_OPTS) $(PANDOC_OPTS) $<
+	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(SLIDES_OPTS) $(PANDOC_OPTS) $<
 
 %.revealjs.html : %.md
-	pandoc -o $@ $(REVEALJS_OPTS) $(PANDOC_OPTS) $<
+	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(REVEALJS_OPTS) $(PANDOC_OPTS) $<
 
 %.slidy.html : %.md
-	pandoc -o $@ $(SLIDY_OPTS) $(PANDOC_OPTS) $<
+	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(SLIDY_OPTS) $(PANDOC_OPTS) $<
 
 %.s5.html : %.md
-	pandoc -o $@ $(S5_OPTS) $(PANDOC_OPTS) $<
+	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(S5_OPTS) $(PANDOC_OPTS) $<
 
 
 ### VARIOUS METHODS USING R
@@ -64,15 +65,3 @@ SLIDES_OPTS = $(REVEALJS_OPTS)
 %.knitr.html : %.md
 	### knitr::knit2html()
 	cd $$(dirname $<); Rscript -e 'knitr::knit2html(basename("$<"),output=basename("$@"))'
-
-%.pander.html : %.md
-	### pander::Pandoc.convert()
-	# note that pander silently modifies input markdown file
-	# AND doesn't provide a way to set the output file
-	# so this WON'T work with files with images in
-	cd $$(dirname $<) && \
-		TEMPFILE="$(addprefix _pander_,$(<F))" && \
-		cp $(<F) $$TEMPFILE && \
-	   	Rscript -e 'f.out <- pander::Pandoc.convert(f="'$${TEMPFILE}'",open=FALSE); file.copy(f.out,basename("$@")); unlink(f.out); cat("$@","\n")' && \
-		rm $$TEMPFILE
-

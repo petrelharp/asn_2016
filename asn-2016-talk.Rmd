@@ -6,6 +6,13 @@ date: "January 13, 2016"
 
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(self.contained=TRUE)
+fig.dim <- 8
+knitr::opts_chunk$set(
+           fig.width=1.4*fig.dim,
+           fig.height=fig.dim,
+           fig.align='center',
+           dev.args=list(pointsize=24),
+           error=FALSE )
 ```
 
 
@@ -32,7 +39,6 @@ Questions
 3.  How will independently arisen adaptations interact?
 
 
-More questions
 --------------
 
 1.  Is there existing variation for the selected trait(s)?
@@ -87,10 +93,21 @@ Geography affects
 
 
 
+Probability of establishment
+----------------------------
+
+The *probability of establishment* 
+in a large population is roughly
+$$ p_\text{estab} \approx 2 s / \nu . $$
+
+If $s < 1/N_\text{loc}$, *local inbreeding* 
+may reduce $p_\text{estab}$.
+
+
 Rate of drift
 -------------
 
-$$ N_\text{loc} \propto \frac{ \#\{ \text{ individuals* within 1$\sigma } \} }{ \nu }, $$
+$$ N_\text{loc} \propto \frac{ \#\{ \text{ individuals* within 1$\sigma$ } \} }{ \nu }, $$
 
 where 
 
@@ -98,14 +115,10 @@ where
 -  *individuals* are haploid,
 -  $\nu = N/N_e$, the strength of drift.
 
-The *probability of establishment* 
-in a large population is roughly
-$$ p_\text{estab} \approx 2 s / \nu . $$
 
-If $s < 1/N_\text{loc}$, *local inbreeding* 
-may reduces $p_\text{estab}$.
+-----------------
 
-```{r setup_habitat_one_sigma, echo=FALSE, cache=TRUE}
+```{r setup_habitat_one_sigma, echo=FALSE, cache=2}
 library(raster); library(rgeos); library(landsim)
 if (!file.exists("desert_veg_central_small.RData")) {
     layer.dir <- "/home/peter/projects/patchy-landscapes/layers"
@@ -125,7 +138,7 @@ if (!file.exists("desert_veg_central_small.RData")) {
 hcols <- c( Blackbrush="#FF9400FF", Creosote="#FFC500FF", 'Creosote-Brittlebush'="#FFF700FF", 'Desert Holly'="#D6FF00FF", 'Joshua Tree'="#00FF52FF", 'Low Elevation Wash System'="#00E6FFFF", 'Mid Elevation Wash System'="#0052FFFF", 'Mojave Yucca'="#1000FFFF" )
 hcols <- hcols[match(levels(smallveg$LABEL_1),names(hcols))]
 ```
-```{r habitat_one_sigma, echo=FALSE, cache=TRUE, depends="setup_habitat_one_sigma"}
+```{r habitat_one_sigma, echo=FALSE, cache=2, depends="setup_habitat_one_sigma"}
 
 refpoint.list <- list( 
        "Creosote" = cbind(x=369276.5, y=-260411.1),
@@ -158,7 +171,7 @@ Alleles that are advantageous when rare
 spread, like *wildfire*. 
 (a "pushed" wave)
 
-```{r setup_wildfire_spread, echo=FALSE, cache=TRUE}
+```{r setup_wildfire_spread, echo=FALSE, cache=2}
 if (!file.exists("desert_veg_central_small_raster.RData")) {
     z <- lapply( levels(smallveg$LABEL_1), function (vt) { gUnaryUnion( subset(smallveg,LABEL_1==vt) ) } )
     rz <- lapply(z, function (x) { rasterize(x, raster(extent(smallveg),res=100), getCover=TRUE ) } )
@@ -171,7 +184,7 @@ if (!file.exists("desert_veg_central_small_raster.RData")) {
     load("desert_veg_central_small_raster.RData")
 }
 ```
-```{r setup_demog, echo=FALSE, cache=TRUE}
+```{r setup_demog, echo=FALSE, cache=2}
 demog <- demography(
         prob.seed = 0.2, fecundity = 100,
         prob.germination = vital( 
@@ -190,80 +203,89 @@ demog <- demography(
         genotypes = c("aa","aA","AA")
     )
 ```
-```{r run_sim, echo=FALSE, cache=TRUE, depends=c("setup_wildfire_spread","setup_habitat_one_sigma","setup_demog")}
-wildfire.vegtypes <- c("Low Elevation Wash System","Creosote")
-mutloc <- list( center=SpatialPoints( cbind(x=358709.2, y=-258082.9), proj4string=CRS(proj4string(smallveg)) ) )
-wildfire.sims <- lapply( wildfire.vegtypes,  function (vegtype) {
-        habitat <- rasterveg[[make.names(vegtype)]]
-        carrying.capacity <- 120 * prod(res(habitat))/270^2  # estimated from google maps near desert queen mine
-        habitable <- (!is.na(values(habitat)) & values(habitat)>0)
-        pop <- population( 
-                          habitat = habitat,
-                          # accessible = !is.na(values(habitat)),
-                          accessible = habitable,
-                          habitable = habitable,
-                          genotypes = c("aa","aA","AA"),
-                          carrying.capacity = carrying.capacity,
-                          N = cbind( aa=rpois(sum(habitable),carrying.capacity),
-                                     aA=0, AA=0 )
-                     )
-        demog <- setup_demography( demog, pop )
-        # summary functions
-        # distance
-        dists <- pointDistance( mutloc$center, xyFromCell(pop$habitat,which(pop$habitable)), lonlat=FALSE )
-        # distance to the mutation center for each habitable cell
-        volume_fun <- function (N) { colSums(N>0) }
-        radius_fun <- function (N) { apply( N, 2, function (x) { suppressWarnings( max( dists[ x>0 ] ) ) } ) }
-        summary.funs <- list( totals=function(N){colSums(N)}, volume=volume_fun, radius=radius_fun)
-        # burn-in
-        sim <- simulate_pop( pop, demog, times=c(0,100) )
-        pop$N[] <- sim$N[,,2]
-        mutloc$cell.number <- match( cellFromXY( habitat, mutloc$center ), which(habitable) )
-        for (ntries in 1:100) {
-            pop <- set_N( pop, i=which(pop$habitable), j="aA", 
-                     value=ifelse(1:nrow(pop$N)==mutloc$cell.number,3,0) )
-            sim <- simulate_pop( pop, demog, times=seq(0,100,length.out=11),
-                             summaries= summary.funs )
-            total.aA <- sim$summaries[[1]][nrow(sim$summaries[[1]]),"aA"]
-            if ( total.aA>0 ) { break }
-        }
-        sim <- extend_simulation( sim, pop, demog, times=seq(sim$t,1000,length.out=101), summaries=summary.funs )
-        return(list(pop=pop,sim=sim))
-    } )
-names(wildfire.sims) <- wildfire.vegtypes
+```{r run_sim, echo=FALSE, cache=2, depends=c("setup_wildfire_spread","setup_habitat_one_sigma","setup_demog")}
+if (!file.exists("wildfire-sims.RData")) {
+    wildfire.vegtypes <- c("Low Elevation Wash System","Creosote")
+    mutloc <- list( center=SpatialPoints( cbind(x=358709.2, y=-258082.9), proj4string=CRS(proj4string(smallveg)) ) )
+    wildfire.sims <- lapply( wildfire.vegtypes,  function (vegtype) {
+            habitat <- rasterveg[[make.names(vegtype)]]
+            carrying.capacity <- 120 * prod(res(habitat))/270^2  # estimated from google maps near desert queen mine
+            habitable <- (!is.na(values(habitat)) & values(habitat)>0)
+            pop <- population( 
+                              habitat = habitat,
+                              # accessible = !is.na(values(habitat)),
+                              accessible = habitable,
+                              habitable = habitable,
+                              genotypes = c("aa","aA","AA"),
+                              carrying.capacity = carrying.capacity,
+                              N = cbind( aa=rpois(sum(habitable),carrying.capacity),
+                                         aA=0, AA=0 )
+                         )
+            demog <- setup_demography( demog, pop )
+            # summary functions
+            # distance
+            dists <- pointDistance( mutloc$center, xyFromCell(pop$habitat,which(pop$habitable)), lonlat=FALSE )
+            # distance to the mutation center for each habitable cell
+            volume_fun <- function (N) { colSums(N>0) }
+            radius_fun <- function (N) { apply( N, 2, function (x) { suppressWarnings( max( dists[ x>0 ] ) ) } ) }
+            summary.funs <- list( totals=function(N){colSums(N)}, volume=volume_fun, radius=radius_fun)
+            # burn-in
+            sim <- simulate_pop( pop, demog, times=c(0,100) )
+            pop$N[] <- sim$N[,,2]
+            mutloc$cell.number <- match( cellFromXY( habitat, mutloc$center ), which(habitable) )
+            for (ntries in 1:100) {
+                pop <- set_N( pop, i=which(pop$habitable), j="aA", 
+                         value=ifelse(1:nrow(pop$N)==mutloc$cell.number,3,0) )
+                sim <- simulate_pop( pop, demog, times=seq(0,100,length.out=11),
+                                 summaries= summary.funs )
+                total.aA <- sim$summaries[[1]][nrow(sim$summaries[[1]]),"aA"]
+                if ( total.aA>0 ) { break }
+            }
+            sim <- extend_simulation( sim, pop, demog, times=seq(sim$t,1000,length.out=101), summaries=summary.funs )
+            return(list(pop=pop,sim=sim))
+        } )
+    names(wildfire.sims) <- wildfire.vegtypes
+    save(mutloc,wildfire.sims,wildfire.vegtypes, file="wildfire-sims.RData")
+} else {
+    load("wildfire-sims.RData")
+}
 ```
-```{r animate_wildfire, cache=TRUE, depends="run_sim"}
+```{r animate_wildfire, echo=FALSE, cache=2, depends="run_sim"}
 for (vegtype in names(wildfire.sims)) {
-    plot.simulation( wildfire.sims[[vegtype]]$sim, wildfire.sims[[vegtype]]$pop,
-                animate=paste("spatial-sweep-",gsub(" ","_",vegtype),".mp4",sep=''),
-                duration=20 )
+    outfile <- paste("spatial-sweep-",gsub(" ","_",vegtype),".mp4",sep='')
+    if (!file.exists(outfile)) {
+        plot.simulation( wildfire.sims[[vegtype]]$sim, wildfire.sims[[vegtype]]$pop,
+                    animate=outfile, duration=20, width=12, height=4, pointsize=18 )
+    }
 }
 ```
 
 ------------------
 
-![spatial-sweep-Low_Elevation_Wash_System.mp4]
+![Wash Systems in Central Mojave](spatial-sweep-Low_Elevation_Wash_System.mp4){ width=10in height=3.33333in }
 
 ------------------
 
-![spatial-sweep-Creosote.mp4]
+![Creosote Scrub in Central Mojave](spatial-sweep-Creosote.mp4){ width=10in height=3.33333in }
 
 ------------------
 
-```{r show_speeds, cache=TRUE, depends="run_sim", include=FALSE}
+```{r show_speeds_wash, cache=2, depends="run_sim", echo=FALSE}
 vegtype <- "Low Elevation Wash System"
 speeds <- list()
 speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
         matplot( sim$summary.times, sim$summaries[["radius"]][,c("aA","AA")], type='l', lty=1:2, col=hcols[vegtype],
                 xlab="generation", main='radius', ylab='distance (m)', xlim=c(0,500) )
         legend( "bottomright", legend=c(pop$genotypes[-1],names(wildfire.sims)), lty=c(1:2,1,1), 
-               col=c("black","black",hcols[names(wildfire.sims)]) )
+               col=c("black","black",hcols[names(wildfire.sims)]), cex=0.75 )
         AA.lims <- c(1.2,0.8)*range(sim$summaries[["radius"]][,"AA"],finite=TRUE)
         AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
                               & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
         AA.speed <- diff( sim$summaries[["radius"]][range(AA.usethese),"AA"] ) / diff( sim$summary.times[range(AA.usethese)] )
-        points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
-        abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        if (sum(!is.na(AA.usethese))>0) {
+            points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
+            abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        }
         AA.speed
     } )
 vegtype <- "Creosote"
@@ -273,17 +295,19 @@ speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
         AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
                               & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
         AA.speed <- diff( sim$summaries[["radius"]][range(AA.usethese),"AA"] ) / diff( sim$summary.times[range(AA.usethese)] )
-        points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
-        abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        if (sum(!is.na(AA.usethese))>0) {
+            points(  sim$summary.times[range(AA.usethese)], sim$summaries[["radius"]][range(AA.usethese),"AA"], pch=20, col=hcols[vegtype] )
+            abline( sim$summaries[["radius"]][min(AA.usethese),"AA"]-AA.speed*sim$summary.times[min(AA.usethese)], AA.speed, col=hcols[vegtype], lty=3 )
+        }
         AA.speed
     } )
-speeds
+# speeds
 ```
 
 
 ------------------
 
-**Continuous:**
+**Continuous habitats**
 
 - speed: $\sigma \sqrt{2s}$ (Fisher/KPP)
     $s$ is *growth rate when rare*
@@ -297,8 +321,9 @@ speeds
 
     **Nelson**
 
+-------------------
 
-**Patchy:**
+**Patchy habitats**
 
 - spread governed by rate of migrants (sparks)
     ${} \times p_\text{estab}$
@@ -328,27 +353,27 @@ Mojave habitats: Environmental niche models
 - others
 
 
-Neighborhood size
 -----------------
 
-proportion of neighborhood occupied
-```{r vol_versus_radius, echo=FALSE, cache=TRUE}
+**Proportion of neighborhood occupied:**
+
+```{r vol_versus_radius, echo=FALSE, cache=2, fig.width=1.8*fig.dim}
 source("habitat-shapes.R")
 mean.areas <-  sapply( central.mojave.area.results, colMeans )
 area.units <- 1e4 # ha
 layout(t(1:2),width=c(3,1))
+par(mar=c(4,4,1,1)+.1)
 matplot(central.mojave.radii, area.units*mean.areas/(pi*central.mojave.radii^2), type='l', log='x', ylab="proportion of circle covered", xlab="radius (m)")
 opar <- par(mar=c(par("mar"),0)[c(1,5,3,5)])
-plot(0,xaxt='n',yaxt='n',xlab='',ylab='',type='n')
-legend("topleft",legend=colnames(mean.areas),lty=1:5,col=1:6)
+plot(0,xaxt='n',yaxt='n',xlab='',ylab='',type='n',bty='n')
+legend("topleft",legend=colnames(mean.areas),lty=1:5,col=1:6, cex=0.6, bty='n')
 ```
 
-Speed of spread
 ---------------
 
-speed versus *s* in different habitats
+**Speed of spread:**
 
-```{r habitat_speeds, echo=FALSE, cache=TRUE}
+```{r habitat_speeds, echo=FALSE, cache=2}
 # provides speed.results:  a list, each component has
 #     svals : selection coefficients
 #     sumtabs : list of the same length as svals giving the results of a simulation with the corresponding selection coefficient
@@ -369,17 +394,27 @@ speeds <- lapply( speed.results, function (ss) { cbind( s=ss$svals, t(sapply( ss
 speeds <- data.frame( habitat=rep(names(speeds),sapply(speeds,nrow)), do.call( rbind, speeds ) )
 ```
 
-Naive prediction has $\sigma=250$.
+<!-- Naive prediction has $\sigma=250$. -->
 ```{r speed.summary, echo=FALSE}
+par(mar=c(4,4,1,1)+.1)
 with( speeds, plot( jitter(s), speed,col=habitat, xlab="s", ylab="speed", pch=20 ) )
 with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( speed, list(s,habitat), mean, na.rm=TRUE ) ), lty=1 ) )
-legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(speeds$habitat) )
+legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(speeds$habitat), cex=0.75 )
 ```
 
-Probability of establishment
 ----------------------------
 
-prob versus $s$ in different habitats
+**Probability of establishment:**
+```{r plot_pestab, echo=FALSE}
+source("establishment-probs.R") # provides establishment.probs
+pestabs <- data.frame( habitat=rep(names(establishment.probs),sapply(establishment.probs,nrow)),
+        do.call( rbind, establishment.probs ) )
+plot(pestabs$s, pestabs$p_estab, col=pestabs$habitat, xlab="s", ylab="prob of establishment", pch=20)
+legend("topleft",pch=20,legend=levels(pestabs$habitat),cex=0.75,col=1:nlevels(pestabs$habitat))
+for (k in seq_along(establishment.probs)) {
+    abline(0,coef(lm(p_estab ~ s + 0, data=data.frame(establishment.probs[[k]]))), col=k)
+}
+```
 
 
 
