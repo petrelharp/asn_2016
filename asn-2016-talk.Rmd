@@ -499,8 +499,10 @@ par(mar=c(4,4,1,1)+.1)
 plot(pestabs$s, pestabs$p_estab, col=pestabs$habitat, xlab="s", ylab="prob of establishment", pch=20)
 legend("topleft",pch=20,legend=levels(pestabs$habitat),cex=0.75,col=1:nlevels(pestabs$habitat))
 for (k in seq_along(establishment.probs)) {
-    abline(0,coef(lm(p_estab ~ s + 0, data=data.frame(establishment.probs[[k]]))), col=k)
+    # abline(0,coef(lm(p_estab ~ s + 0, data=data.frame(establishment.probs[[k]]))), col=k)
+    abline(coef(lm(p_estab ~ s, data=data.frame(establishment.probs[[k]]))), col=k)
 }
+# sort( with( pestabs, tapply( p_estab/s, habitat, mean ) ) )
 ```
 
 
