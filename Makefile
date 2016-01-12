@@ -23,15 +23,15 @@ else
 	PANDOC_OPTS += -H <(echo '\['; cat $(MACROS_FILE); echo '\]')
 endif
 
-%.html : %.Rmd
-	# cd $$(dirname $<); Rscript -e 'knitr::knit2html(basename("$<"),output=basename("$@"))'
-	cd $$(dirname $<); Rscript -e 'rmarkdown::render(basename("$<"),output_file=basename("$@"))'
-
 %.html : %.md
 	pandoc -f markdown$(PANDOC_EXTENSIONS) -o $@ $(PANDOC_OPTS) $<
 
 %.md : %.Rmd
 	cd $$(dirname $<); Rscript -e 'knitr::knit(basename("$<"),output=basename("$@"))'
+
+%.html : %.Rmd
+	# cd $$(dirname $<); Rscript -e 'knitr::knit2html(basename("$<"),output=basename("$@"))'
+	cd $$(dirname $<); Rscript -e 'rmarkdown::render(basename("$<"),output_file=basename("$@"))'
 
 ## VARIOUS SLIDE METHODS
 REVEALJS_OPTS = -t revealjs -V theme=simple -V slideNumber=true -V transition=none -H resources/adjust-revealjs.style
