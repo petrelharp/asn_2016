@@ -493,14 +493,20 @@ legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(spe
 **Probability of establishment:**
 ```{r plot_pestab, echo=FALSE}
 source("establishment-probs.R") # provides establishment.probs
+source("establishment-probs_low-density.R") # provides low.density.establishment.probs
 pestabs <- data.frame( habitat=rep(names(establishment.probs),sapply(establishment.probs,nrow)),
         do.call( rbind, establishment.probs ) )
+pestabs.ld <- data.frame( habitat=rep(names(low.density.establishment.probs),sapply(low.density.establishment.probs,nrow)),
+        do.call( rbind, low.density.establishment.probs ) )
+pestabs.ld$habitat <- factor( pestabs.ld$habitat, levels=levels(pestabs$habitat) )
 par(mar=c(4,4,1,1)+.1)
 plot(pestabs$s, pestabs$p_estab, col=pestabs$habitat, xlab="s", ylab="prob of establishment", pch=20)
+ points(pestabs.ld$s, pestabs.ld$p_estab, col=pestabs.ld$habitat )
 legend("topleft",pch=20,legend=levels(pestabs$habitat),cex=0.75,col=1:nlevels(pestabs$habitat))
 for (k in seq_along(establishment.probs)) {
     # abline(0,coef(lm(p_estab ~ s + 0, data=data.frame(establishment.probs[[k]]))), col=k)
     abline(coef(lm(p_estab ~ s, data=data.frame(establishment.probs[[k]]))), col=k)
+      abline(coef(lm(p_estab ~ s, data=data.frame(low.density.establishment.probs[[k]]))), col=k)
 }
 # sort( with( pestabs, tapply( p_estab/s, habitat, mean ) ) )
 ```
