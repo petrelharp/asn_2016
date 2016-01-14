@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Peter Ralph">
+  <title>Adaptation to changing environments across real geographies</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/simple.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+  <script src="/usr/share/javascript/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <style type="text/css">
+  
+  .reveal h1 { font-size: 2.5em; } 
+  
+  .reveal .slides { text-align: left; }
+  
+  .reveal .slides figure { text-align: center; }
+  
+  .reveal figcaption { display: none; }
+  
+  </style>
+  \[
+  
+  \newcommand{\E}{\mathbb{E}}
+  \renewcommand{\P}{\mathbb{P}}
+  \newcommand{\R}{\mathbb{R}}
+  \newcommand{\one}{\mathbf{1}}
+  \newcommand{\grad}{\nabla}
+  
+  \DeclareMathOperator{\sgn}{sgn}
+  \DeclareMathOperator{\var}{Var}
+  \DeclareMathOperator{\cov}{Cov}
+  
+  \]
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Adaptation to changing environments across real geographies</h1>
+  <h2 class="author">Peter Ralph</h2>
+  <h3 class="date">ASN // Asilomar // January 13, 2016</h3>
+</section>
+
+<section><section id="adaptation-to-climate-change" class="titleslide slide level1"><h1>Adaptation to climate change</h1></section><section class="slide level2">
+
+<p><em>Rapid</em> climate change:</p>
+<ul>
+<li>occurring over tens of generations</li>
+<li>different environment <span class="math inline">\(\Rightarrow\)</span> strong selective pressure</li>
+</ul>
+<p><em>This talk:</em> population genetics considerations.</p>
+</section><section class="slide level2">
+
+<p><strong>What I'm not talking about:</strong></p>
+<ul>
+<li>local adaptation</li>
+<li>plasticity</li>
+<li>genetic architecture</li>
+<li>population size dynamics</li>
+<li>interspecific interactions</li>
+</ul>
+<p><strong>What I am talking about:</strong></p>
+<ul>
+<li>most organisms don't live on billiard tables</li>
+</ul>
+</section><section id="questions" class="slide level2">
+<h1>Questions</h1>
+<p>How does geography affect how adaptive variants</p>
+<ol type="1">
+<li><p>arise and</p></li>
+<li><p>spread,</p></li>
+<li><p>and how much variation is left afterwards?</p></li>
+</ol>
+</section><section class="slide level2">
+
+<p><strong>Can adaptations spread?</strong></p>
+<ul>
+<li>with moving environmental gradients</li>
+<li>or from locations of existing variants</li>
+</ul>
+<p>Also relevant for:</p>
+<ul>
+<li>Do adaptive variants spread along wildlife corridors?</li>
+<li>What is the spatial resolution of adaptation?</li>
+</ul>
+</section><section class="slide level2">
+
+<figure>
+<img src="standing-variation-intro-1.png" alt="cartoon of spread" height="576" /><figcaption>cartoon of spread</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<p><strong>Population genetics wants to know:</strong></p>
+<ol type="1">
+<li><p>population size</p>
+<ul>
+<li>availability of standing deleterious variation</li>
+<li>influx of new mutations</li>
+</ul></li>
+<li><p>strength of selection</p>
+<ul>
+<li>probability of establishment of rare variants</li>
+<li>rate of spread of adaptive variants</li>
+</ul></li>
+<li><p>rate of genetic drift</p>
+<ul>
+<li>rate of local loss of variation</li>
+<li>probability of establishment of rare variants</li>
+</ul></li>
+</ol>
+</section><section class="slide level2">
+
+<p>these are affected by</p>
+<p><strong>geography <span class="math inline">\({}+{}\)</span> dispersal <span class="math inline">\({}+{}\)</span> temporal dynamics</strong></p>
+<figure>
+<img src="porous-media.png" alt="https://sites.google.com/site/jimenezmartinezj/" /><figcaption>https://sites.google.com/site/jimenezmartinezj/</figcaption>
+</figure>
+</section></section>
+<section><section id="mojave-desert-habitats" class="titleslide slide level1"><h1>Mojave Desert habitats</h1></section><section class="slide level2">
+
+<figure>
+<img src="databasin-screenshot.png" alt="http://databasin.org/datasets/0a419342ec904b3c8fc710003f52ebe0" height="576" /><figcaption>http://databasin.org/datasets/0a419342ec904b3c8fc710003f52ebe0</figcaption>
+</figure>
+<p>Cal DFG; Todd Keeler-Wolf, CNPS (http://vegetation.cnps.org/)[http://vegetation.cnps.org/]</p>
+</section><section class="slide level2">
+
+<p>Zoomed-in (NVCS macrogroup):</p>
+<p><img src="figure/veg_chunk-1.png" title="plot of chunk veg_chunk" alt="plot of chunk veg_chunk" style="display: block; margin: auto;" /></p>
+</section><section class="slide level2">
+
+<p><strong>Environmental niche models:</strong> (Biogeography Lab, UCSB)</p>
+<figure>
+<img src="niche-models.png" alt="Niche models" /><figcaption>Niche models</figcaption>
+</figure>
+</section><section id="demographic-model" class="slide level2">
+<h1>Demographic model</h1>
+<ul>
+<li>200m grid</li>
+<li>equilibrium density: 0.4 (low) or 16 (high) / ha</li>
+<li>R package: <a href="github.com/petrelharp/landsim" class="uri">github.com/petrelharp/landsim</a></li>
+</ul>
+<pre><code>demography(
+    prob.seed = 0.2, fecundity = 100,
+    pollen.migration = migration(
+        kern = function (x) { exp(-sqrt(x)) },
+        sigma = 300, radius = 1200, normalize = NULL ),
+    seed.migration = migration(
+        kern = &quot;gaussian&quot;, sigma = 100,
+        radius = 1200, normalize = 1 ),
+    prob.germination = vital(
+        function (N, ...) {
+            out &lt;- r0 / ( 1 + rowSums(N)/carrying.capacity )
+            return( cbind( aa=out, aA=(1+s)*out, AA=(1+s)^2*out ) )
+        },
+        r0 = 0.01,  s = 0.05 ),
+    prob.survival = 0.9,
+    genotypes = c(&quot;aa&quot;,&quot;aA&quot;,&quot;AA&quot;)
+ )</code></pre>
+</section></section>
+<section><section id="rate-of-genetic-drift" class="titleslide slide level1"><h1>Rate of genetic drift</h1></section><section class="slide level2">
+
+<p><strong>Wright's neighborhood size:</strong></p>
+<p><span class="math display">\[ N_\text{loc} \propto \#\{ \text{ individuals within 1$\sigma$ } \}, \]</span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(\sigma\)</span> is the <strong>dispersal distance</strong></li>
+<li><em>individuals</em> are haploid.</li>
+</ul>
+<p>Local heterozygosity is <span class="math display">\[ H_0 \propto \frac{N_\text{loc}}{C + N_\text{loc}}, \]</span> where <span class="math inline">\(C\)</span> depends on mutation rate and geometry.</p>
+<p>(Barton, Depaulis, &amp; Etheridge)</p>
+<!--
+in 1D prob of IBD is
+$$ \phi(x) = \exp(-|x| \sqrt{2 \mu}/\sigma) / ( 1 + 2 N_{loc} \sigma \sqrt{2\mu} ) $$
+and in 2D
+$$ 1-\phi(0) = N_{\loc}/(N_{\loc} + \log(\sigma/(K\sqrt{2\mu}))) $$
+For large $x$, we know $K_0(x) \sim \exp(-x)/\sqrt{x}$.
+-->
+</section><section class="slide level2">
+
+<p><span class="math inline">\(N_\text{loc}\)</span> at different scales depends on population density and <em>amount of nearby habitat:</em></p>
+<p><img src="figure/habitat_one_sigma-1.png" title="plot of chunk habitat_one_sigma" alt="plot of chunk habitat_one_sigma" style="display: block; margin: auto;" /></p>
+</section><section class="slide level2">
+
+<p>NVCS Macrogroup, central Mojave:</p>
+<p><img src="figure/vol_versus_radius-1.png" title="plot of chunk vol_versus_radius" alt="plot of chunk vol_versus_radius" style="display: block; margin: auto;" /></p>
+</section><section class="slide level2">
+
+<p>Creosote:</p>
+<figure>
+<img src="central_Creosote.png" alt="Creosote" height="576" /><figcaption>Creosote</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<p>Blackbrush:</p>
+<figure>
+<img src="central_Blackbrush.png" alt="Blackbrush" height="576" /><figcaption>Blackbrush</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<p>Wash:</p>
+<figure>
+<img src="central_Low_Elevation_Wash_System.png" alt="Wash" height="576" /><figcaption>Wash</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<p><strong>Genetic drift:</strong></p>
+<p><span class="math display">\[\var[p_{t+1}|p_t]/p_t(1-p_t) \text{  against  } N_\text{loc}\]</span></p>
+<figure>
+<img src="drift-vs-popsize.png" alt="drift against pop size" height="432" /><figcaption>drift against pop size</figcaption>
+</figure>
+</section></section>
+<section><section id="probability-of-establishment" class="titleslide slide level1"><h1>Probability of establishment</h1></section><section class="slide level2">
+
+<p>The <em>probability of establishment</em> of a single allele in a large population is <span class="math display">\[ p_\text{estab} \approx 2 s / \nu , \]</span></p>
+<ul>
+<li>where <span class="math inline">\(\nu\)</span> is the strength of drift</li>
+<li><span class="math inline">\(s\)</span> is growth rate when rare.</li>
+</ul>
+<p>If <span class="math inline">\(s &lt; 1/N_\text{loc}\)</span>, <em>local inbreeding</em> may reduce <span class="math inline">\(p_\text{estab}\)</span>.</p>
+</section><section class="slide level2">
+
+<p><img src="figure/plot_pestab-1.png" title="plot of chunk plot_pestab" alt="plot of chunk plot_pestab" style="display: block; margin: auto;" /></p>
+</section></section>
+<section><section id="speed-of-spread" class="titleslide slide level1"><h1>Speed of spread</h1></section><section class="slide level2">
+
+<p>Alleles that are advantageous when rare spread, like <em>wildfire</em>. (a &quot;pulled&quot; wave)</p>
+<p><strong>Continuous habitats</strong></p>
+<ul>
+<li>speed: <span class="math inline">\(\sigma \sqrt{2s}\)</span> (Fisher/KPP)
+<ul>
+<li><span class="math inline">\(s\)</span> is <em>growth rate when rare</em></li>
+<li>takes 1-10 generations to move a dispersal distance</li>
+</ul></li>
+<li><p>leptokurtic dispersal: patchy, accelerating (Mollison 1972)</p></li>
+<li><p>slowed by drift</p></li>
+</ul>
+</section><section class="slide level2">
+
+<p><strong>Huygens principle:</strong> the wave has to go around barriers (Möbius, Murray, &amp; Nelson 2015)</p>
+<ul>
+<li><em>tortuosity</em>: ratio of length of curve to distance between its ends</li>
+</ul>
+<figure>
+<img src="huygens.png" alt="Huygens principle" /><figcaption>Huygens principle</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<figure>
+<embed src="spatial-sweep-Creosote.mp4" width="960" height="319" /><figcaption>Creosote Scrub in Central Mojave</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<figure>
+<embed src="spatial-sweep-Low_Elevation_Wash_System.mp4" width="960" height="319" /><figcaption>Wash Systems in Central Mojave</figcaption>
+</figure>
+</section><section class="slide level2">
+
+<p><img src="figure/show_speeds_wash-1.png" title="plot of chunk show_speeds_wash" alt="plot of chunk show_speeds_wash" style="display: block; margin: auto;" /></p>
+</section><section class="slide level2">
+
+<p>Speeds in different habitats:</p>
+<!-- Naive prediction has $\sigma=250$. -->
+<p><img src="figure/speed.summary-1.png" title="plot of chunk speed.summary" alt="plot of chunk speed.summary" style="display: block; margin: auto;" /></p>
+</section><section class="slide level2">
+
+<p><strong>Spread in patchy habitats</strong></p>
+<ul>
+<li><p>spread governed by arrival of migrants <span class="math inline">\({} \times p_\text{estab}\)</span></p></li>
+<li><p>if gaps are totally uninhabitable (sparks carried by wind), depends on <em>long distance dispersal</em></p></li>
+</ul>
+</section><section class="slide level2">
+
+<ul>
+<li><p>if growth rate in gaps is <span class="math inline">\(1-m\)</span> (flammable but fire dies out) rate of migrant families is</p>
+<p><span class="math display">\[\propto e^{-x \sqrt{2m}/\sigma}\]</span></p></li>
+</ul>
+<figure>
+<img src="sim-transit-cropped.png" alt="Spread between patches" width="576" /><figcaption>Spread between patches</figcaption>
+</figure>
+<p>Both depend critically on <em>dispersal</em> mechanism.</p>
+</section></section>
+<section><section id="conclusions" class="titleslide slide level1"><h1>Conclusions</h1></section><section class="slide level2">
+
+<ul>
+<li><p>Adaptation in connected habitats depends on habitat shape, but only weakly.</p></li>
+<li><p>Adaptation is strongly affected by</p>
+<ul>
+<li>connectivity</li>
+<li>long-distance dispersal</li>
+<li>population size</li>
+<li>ecological interactions</li>
+</ul></li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>Allee affects?</li>
+<li>Ubiquitous, polygenic variation?</li>
+<li>Many habitats are patchy: are they still connected?</li>
+<li>Shape of isolation by distance?</li>
+</ul>
+</section><section id="thanks" class="slide level2">
+<h1>Thanks!</h1>
+<ul>
+<li>Erik Lundgren (USC)</li>
+<li>Julie Evens (CNPS)</li>
+<li>Greg Suba (CNPS)</li>
+<li><p>R's GIS tools: <code>sp</code>, <code>raster</code>, <code>rgeos</code>, ...</p></li>
+<li>NSF: ABI</li>
+<li><p>Sloan Foundation</p></li>
+</ul>
+<p>The R package: github.com/petrelharp/landsim</p>
+</section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
