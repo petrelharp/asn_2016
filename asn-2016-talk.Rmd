@@ -35,9 +35,8 @@ hcols <- c( Blackbrush="#FF9400FF", Creosote="#FFC500FF", 'Creosote-Brittlebush'
 hcols <- hcols[match(levels(smallveg$LABEL_1),names(hcols))]
 ```
 
-# Adaptation to rapid climate change
+# Adaptation to climate change
 
-Climate change
 --------------
 
 *Rapid* climate change:
@@ -46,8 +45,6 @@ Climate change
 - different environment $\Rightarrow$ strong selective pressure
 
 *This talk:* population genetics considerations.
-
-*Spoiler alert:* ecological dynamics are important.
 
 
 -----------------
@@ -68,30 +65,14 @@ Climate change
 Questions
 ---------
 
-1.  Can species adapt to maintain something like their present range?
+How does geography affect how adaptive variants
 
-2.  If so, how will genetic diversity be affected?
+1. arise and
 
-3.  How will independently arisen adaptations interact?
+2. spread,
 
+3. and how much variation is left afterwards?
 
---------------
-
-**Is there existing variation for the selected trait(s)?**
-
-- genetic load?
-- due to local adaptation?
-- temporal fluctuations?
-- balancing selection?
-
---------------
-
-**What is the genetic architecture of the trait?**
-
-- mutational target size?
-- interactions?
-- dominance?
-- pleiotropy?
 
 --------------
 
@@ -100,6 +81,15 @@ Questions
 - with moving environmental gradients
 - or from locations of existing variants
 
+Also relevant for:
+
+- Do adaptive variants spread along wildlife corridors?
+- What is the spatial resolution of adaptation?
+
+
+------------------------------
+
+![cartoon of spread](standing-variation-intro-1.png){ height=6in }
 
 ------------------------------
 
@@ -123,13 +113,10 @@ Questions
 
 -----------------
 
-**geography ${}+{}$ dispersal ${}+{}$ temporal dynamics** affect
+these are affected by
 
-- Rate of genetic drift
+**geography ${}+{}$ dispersal ${}+{}$ temporal dynamics**
 
-- Probability of establishment
-
-- Speed of spread
 
 ![https://sites.google.com/site/jimenezmartinezj/](porous-media.png)
 
@@ -142,7 +129,7 @@ Questions
 
 ![http://databasin.org/datasets/0a419342ec904b3c8fc710003f52ebe0](databasin-screenshot.png){ height=6in }
 
-Cal DFG; Todd Keeler-Wolf, CNPS
+Cal DFG; Todd Keeler-Wolf, CNPS (http://vegetation.cnps.org/)[http://vegetation.cnps.org/]
 
 ---------------
 
@@ -161,7 +148,7 @@ par(opar)
 
 ---------------
 
-**Environmental niche models:** (Bren school, UCSB)
+**Environmental niche models:** (Biogeography Lab, UCSB)
 
 ```{r niche_plot, echo=FALSE}
 if (FALSE) { # do this elsewhere
@@ -191,43 +178,72 @@ Demographic model
 
 - 200m grid
 - equilibrium density: 0.4 (low) or 16 (high) / ha 
-- R package: [github.com/petrelharp/landsim]
+- R package: [github.com/petrelharp/landsim](github.com/petrelharp/landsim)
 
 ```
 demography(
-         prob.seed = 0.2, fecundity = 100,
-         pollen.migration = migration(
-                  kern = function (x) { exp(-sqrt(x)) },
-                  sigma = 300, radius = 1200, normalize = NULL ),
-         seed.migration = migration(
-                  kern = "gaussian", sigma = 100,
-                  radius = 1200, normalize = 1 ),
-         prob.germination = vital(
-                  function (N, ...) {
-                      out <- r0 / ( 1 + rowSums(N)/carrying.capacity )
-                      return( cbind( aa=out, aA=(1+s)*out, AA=(1+s)^2*out ) )
-                  },
-                  r0 = 0.01,  s = 0.05 ),
-         prob.survival = 0.9,
-         genotypes = c("aa","aA","AA")
-     )
+    prob.seed = 0.2, fecundity = 100,
+    pollen.migration = migration(
+        kern = function (x) { exp(-sqrt(x)) },
+        sigma = 300, radius = 1200, normalize = NULL ),
+    seed.migration = migration(
+        kern = "gaussian", sigma = 100,
+        radius = 1200, normalize = 1 ),
+    prob.germination = vital(
+        function (N, ...) {
+            out <- r0 / ( 1 + rowSums(N)/carrying.capacity )
+            return( cbind( aa=out, aA=(1+s)*out, AA=(1+s)^2*out ) )
+        },
+        r0 = 0.01,  s = 0.05 ),
+    prob.survival = 0.9,
+    genotypes = c("aa","aA","AA")
+ )
 ```
 
 
 
-# Proportion of neighborhood occupied
+# Rate of genetic drift
+
+-------------
+
+**Wright's neighborhood size:**
+
+$$ N_\text{loc} \propto \#\{ \text{ individuals within 1$\sigma$ } \}, $$
+
+where 
+
+-  $\sigma$ is the **dispersal distance**
+-  *individuals* are haploid.
+
+Local heterozygosity is
+$$ H_0 \propto \frac{N_\text{loc}}{C + N_\text{loc}}, $$
+where $C$ depends on mutation rate and geometry.
+
+(Barton, Depaulis, & Etheridge)
+
+<!--
+in 1D prob of IBD is
+$$ \phi(x) = \exp(-|x| \sqrt{2 \mu}/\sigma) / ( 1 + 2 N_{loc} \sigma \sqrt{2\mu} ) $$
+and in 2D
+$$ 1-\phi(0) = N_{\loc}/(N_{\loc} + \log(\sigma/(K\sqrt{2\mu}))) $$
+For large $x$, we know $K_0(x) \sim \exp(-x)/\sqrt{x}$.
+-->
+
 
 -----------------
 
-Proportion of circle covered by habitat type, at various radii
+$N_\text{loc}$ at different scales depends on population density
+and *amount of nearby habitat:*
 
-```{r habitat_one_sigma_again, echo=FALSE, cache=2, depends="setup_habitat_one_sigma", fig.height=0.75*fig.dim}
+```{r habitat_one_sigma, echo=FALSE, cache=2, depends="setup_habitat_one_sigma", fig.height=0.8*fig.dim}
+
 refpoint.list <- list( 
        "Creosote" = cbind(x=369276.5, y=-260411.1),
        "Low Elevation Wash System" = cbind(x=365959.7, y=-260357.6)
    )
 refcol <- c( Creosote="red", "Low Elevation Wash System"="blue" )
 radii <- c(1000,5000)
+
 layout(t(1:2))
 par(mar=c(0,0,0,0)+.5)
 for (vegtype in names(refpoint.list)) {
@@ -236,13 +252,14 @@ for (vegtype in names(refpoint.list)) {
     refpoints <- SpatialPoints( refpoint.list[vegtype], proj4string=CRS(proj4string(smallveg)) )
     refcircles <- make_circles( refpoints[rep(1,length(radii))], radii=radii )
     habcircles <- gIntersection( refcircles, crop(thisveg,3*extent(refcircles)), byid=c(TRUE,FALSE) )
+
     plot( smallveg, col=adjustcolor(hcols[smallveg$LABEL_1],0.2) ) #, add=TRUE )
     plot( habcircles, col=adjustcolor(refcol[vegtype],0.5), add=TRUE, border=NA )
     lines(refcircles, lty=2 )
     points(refpoints,pch="*", col='red')
 }
-```
 
+```
 
 -----------------
 
@@ -262,17 +279,30 @@ legend("topleft",legend=colnames(mean.areas),lty=1:5,col=1:6, cex=0.6, bty='n')
 
 ----------
 
-![Creosote](desert_veg/thumbs/central_Creosote.png)
+Creosote:
+
+![Creosote](central_Creosote.png){ height=6in }
 
 ----------
 
-![Blackbrush](desert_veg/thumbs/central_Blackbrush.png)
+Blackbrush:
+
+![Blackbrush](central_Blackbrush.png){ height=6in }
 
 ----------
 
-![Wash](desert_veg/thumbs/central_Low_Elevation_Wash_System.png)
+Wash:
 
-----------
+![Wash](central_Low_Elevation_Wash_System.png){ height=6in }
+
+
+-----------------
+
+**Genetic drift:** 
+
+$$\var[p_{t+1}|p_t]/p_t(1-p_t) \text{  against  } N_\text{loc}$$
+
+![drift against pop size](drift-vs-popsize.png){ height=4.5in }
 
 
 # Probability of establishment
@@ -280,9 +310,12 @@ legend("topleft",legend=colnames(mean.areas),lty=1:5,col=1:6, cex=0.6, bty='n')
 -------------------
 
 The *probability of establishment* 
-in a large population is roughly
+of a single allele
+in a large population is
 $$ p_\text{estab} \approx 2 s / \nu , $$
--  where $\nu$ is the strength of drift.
+
+-  where $\nu$ is the strength of drift
+- $s$ is growth rate when rare.
 
 If $s < 1/N_\text{loc}$, *local inbreeding* 
 may reduce $p_\text{estab}$.
@@ -320,6 +353,7 @@ par(mar=c(4,4,1,1)+.1)
 with(pestabs, plot(s, p_estab, col=habitat, xlab="s", ylab="prob of establishment", pch=20) )
  with(pestabs.ld, points(s, p_estab, col=habitat ) )
 legend("topleft",pch=20,legend=levels(pestabs$habitat),cex=0.75,col=1:nlevels(pestabs$habitat))
+legend("bottomright",pch=c(1,20),legend=c("low density","high density"),cex=0.75)
 for (hab in levels(pestabs$habitat)) {
     # abline(0,coef(lm(p_estab ~ s + 0, data=data.frame(establishment.probs[[k]]))), col=k)
     abline(coef(lm(p_estab ~ s, data=subset(pestabs,habitat==hab))),
@@ -348,13 +382,13 @@ spread, like *wildfire*.
     * $s$ is *growth rate when rare*
     * takes 1-10 generations to move a dispersal distance
 
-- leptokurtic dispersal: patchy, accelerating (XX, Hallatschek)
+- leptokurtic dispersal: patchy, accelerating (Mollison 1972)
 
 - slowed by drift
 
 ---------
 
-**Huygens principle:** the wave has to go around barriers (Nelson)
+**Huygens principle:** the wave has to go around barriers (Möbius, Murray, & Nelson 2015)
 
 - *tortuosity*: ratio of length of curve to distance between its ends
 
@@ -463,10 +497,10 @@ for (vegtype in names(wildfire.sims)) {
 vegtype <- "Low Elevation Wash System"
 speeds <- list()
 speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
-        matplot( sim$summary.times, sim$summaries[["radius"]][,c("aA","AA")], type='l', lty=1:2, col=hcols[vegtype],
-                xlab="generation", main='radius', ylab='distance (m)', xlim=c(0,500) )
-        legend( "bottomright", legend=c(pop$genotypes[-1],names(wildfire.sims)), lty=c(1:2,1,1), 
-               col=c("black","black",hcols[names(wildfire.sims)]), cex=0.75 )
+        plot( sim$summary.times, sim$summaries[["radius"]][,c("AA")], type='l', col=hcols[vegtype],
+                xlab="generation", main='radius of adaptive wave', ylab='distance (m)', xlim=c(0,500) )
+        legend( "bottomright", legend=names(wildfire.sims), lty=1,
+               col=c(hcols[names(wildfire.sims)]), cex=0.75 )
         AA.lims <- c(1.2,0.8)*range(sim$summaries[["radius"]][,"AA"],finite=TRUE)
         AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
                               & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
@@ -479,7 +513,7 @@ speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
     } )
 vegtype <- "Creosote"
 speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
-        matlines( sim$summary.times, sim$summaries[["radius"]][,c("aA","AA")], type='l', lty=1:2, col=hcols[vegtype] )
+        lines( sim$summary.times, sim$summaries[["radius"]][,"AA"], type='l', col=hcols[vegtype] )
         AA.lims <- c(1.2,0.8)*range(sim$summaries[["radius"]][,"AA"],finite=TRUE)
         AA.usethese <- which( ( sim$summaries[["radius"]][,"AA"] > AA.lims[1] ) 
                               & ( sim$summaries[["radius"]][,"AA"] < AA.lims[2] ) )
@@ -491,6 +525,55 @@ speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
         AA.speed
     } )
 # speeds
+```
+
+
+---------------
+
+Speeds in different habitats:
+
+```{r habitat_speeds, echo=FALSE, cache=2}
+# provides speed.results:  a list, each component has
+#     svals : selection coefficients
+#     sumtabs : list of the same length as svals giving the results of a simulation with the corresponding selection coefficient
+# and also actual.sigmas
+source("habitat-speeds.R")
+speedfun <- function (sumtab) {
+    # returns (x0,x1,y0,y1,(y1-y0)/(x1-x0))
+    AA.lims <- c(1.2,0.8)*range(sumtab[,"radius_AA"],finite=TRUE)
+    AA.usethese <- which( ( sumtab[,"radius_AA"] > AA.lims[1] ) 
+                          & ( sumtab[,"radius_AA"] < AA.lims[2] ) )
+    out <- if (length(AA.usethese)>1) {
+        AA.speed <- diff( sumtab[range(AA.usethese),"radius_AA"] ) / diff( sumtab[range(AA.usethese),"t"] )
+        c(  sumtab[range(AA.usethese),"t"], sumtab[range(AA.usethese),"radius_AA"], AA.speed )
+    } else { rep(NA,5) }
+    names(out) <- c("x0","x1","y0","y1","speed")
+    out
+}
+speeds <- lapply( speed.results, function (ss) { cbind( s=ss$svals, t(sapply( ss$sumtabs, speedfun )) ) } )
+speeds <- data.frame( habitat=rep(names(speeds),sapply(speeds,nrow)), do.call( rbind, speeds ) )
+# remove non-plants, subset to central
+clnames <- function (x) { gsub(".chaparral","",gsub(".wetland","",gsub("central ","",x))) }
+speeds <- subset(speeds, grepl("central",habitat))
+speeds$habitat <- factor(clnames(speeds$habitat))
+sigmas <- data.frame( subset(actual.sigmas, grepl("central",rownames(actual.sigmas))) )
+sigmas$habitat <- factor( clnames(rownames(sigmas)), levels=levels(speeds$habitat) )
+speeds$predicted <- sqrt(2*speeds$s) * rowMeans( sigmas[match(speeds$habitat,sigmas$habitat),1:2] ) * (1-demog$prob.survival)
+```
+
+<!-- Naive prediction has $\sigma=250$. -->
+```{r speed.summary, echo=FALSE}
+ss <- seq(0,0.5,length.out=100)
+speed.pred <- outer( sqrt(2*ss), rowMeans( sigmas[match(levels(speeds$habitat),sigmas$habitat),1:2] ), "*" ) * (1-demog$prob.survival)
+par(mar=c(4,4,1,1)+.1)
+with( speeds, plot( jitter(s), speed,col=habitat, xlab="s", ylab="speed", pch=20, xlim=c(0,0.5) ) )
+with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( speed, list(s,habitat), mean, na.rm=TRUE ) ), lty=1 ) )
+# with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( predicted, list(s,habitat), mean, na.rm=TRUE ) ), lty=3 ) )
+matlines( ss, speed.pred, lty=3 )
+legend("topleft",pch=c(rep(20,nlevels(speeds$habitat)),rep(NA,2)),
+       lty=c(rep(NA,nlevels(speeds$habitat)),rep(1,2)),
+       col=c(seq_along(levels(speeds$habitat)),rep('black',2)),
+       legend=c(levels(speeds$habitat),c("observed","theory")), cex=0.75 )
 ```
 
 
@@ -518,115 +601,28 @@ speeds[[vegtype]] <- with( list2env(wildfire.sims[[vegtype]]), {
 Both depend critically on *dispersal* mechanism.
 
 
----------------
-
-Speeds in different habitats:
-
-```{r habitat_speeds, echo=FALSE, cache=2}
-# provides speed.results:  a list, each component has
-#     svals : selection coefficients
-#     sumtabs : list of the same length as svals giving the results of a simulation with the corresponding selection coefficient
-source("habitat-speeds.R")
-speedfun <- function (sumtab) {
-    # returns (x0,x1,y0,y1,(y1-y0)/(x1-x0))
-    AA.lims <- c(1.2,0.8)*range(sumtab[,"radius_AA"],finite=TRUE)
-    AA.usethese <- which( ( sumtab[,"radius_AA"] > AA.lims[1] ) 
-                          & ( sumtab[,"radius_AA"] < AA.lims[2] ) )
-    out <- if (length(AA.usethese)>1) {
-        AA.speed <- diff( sumtab[range(AA.usethese),"radius_AA"] ) / diff( sumtab[range(AA.usethese),"t"] )
-        c(  sumtab[range(AA.usethese),"t"], sumtab[range(AA.usethese),"radius_AA"], AA.speed )
-    } else { rep(NA,5) }
-    names(out) <- c("x0","x1","y0","y1","speed")
-    out
-}
-speeds <- lapply( speed.results, function (ss) { cbind( s=ss$svals, t(sapply( ss$sumtabs, speedfun )) ) } )
-speeds <- data.frame( habitat=rep(names(speeds),sapply(speeds,nrow)), do.call( rbind, speeds ) )
-# remove non-plants, subset to central
-speeds <- subset(speeds, grepl("central",habitat))
-speeds$habitat <- factor(gsub(".chaparral","",gsub(".wetland","",gsub("central ","",speeds$habitat))))
-```
-
-<!-- Naive prediction has $\sigma=250$. -->
-```{r speed.summary, echo=FALSE}
-par(mar=c(4,4,1,1)+.1)
-with( speeds, plot( jitter(s), speed,col=habitat, xlab="s", ylab="speed", pch=20 ) )
-with( speeds, matlines( sort(unique(speeds$s)), with( speeds, tapply( speed, list(s,habitat), mean, na.rm=TRUE ) ), lty=1 ) )
-legend("topleft",pch=20,col=seq_along(levels(speeds$habitat)), legend=levels(speeds$habitat), cex=0.75 )
-```
-
-
-# Rate of drift
-
--------------
-
-$$ N_\text{loc} \propto \frac{ \#\{ \text{ individuals* within 1$\sigma$ } \} }{ \nu }, $$
-
-where 
-
--  $\sigma$ is the **dispersal distance**
--  *individuals* are haploid,
--  $\nu = N/N_e$, the strength of drift.
-
-Local heterozygosity is
-$$ H_0 \propto \frac{N_\text{loc}}{C + N_\text{loc}}, $$
-where $C$ depends on mutation rate and geometry.
-
-(Barton, Depaulis, & Etheridge)
-
-
------------------
-
-$N_\text{loc}$ at different scales depends on population density
-and *amount of nearby habitat:*
-
-```{r habitat_one_sigma, echo=FALSE, cache=2, depends="setup_habitat_one_sigma", fig.height=0.8*fig.dim}
-
-refpoint.list <- list( 
-       "Creosote" = cbind(x=369276.5, y=-260411.1),
-       "Low Elevation Wash System" = cbind(x=365959.7, y=-260357.6)
-   )
-refcol <- c( Creosote="red", "Low Elevation Wash System"="blue" )
-radii <- c(1000,5000)
-
-layout(t(1:2))
-par(mar=c(0,0,0,0)+.5)
-for (vegtype in names(refpoint.list)) {
-    thisveg <- subset( smallveg, LABEL_1==vegtype )
-    # refpoints <- spsample( thisveg, n=1, type='random' )
-    refpoints <- SpatialPoints( refpoint.list[vegtype], proj4string=CRS(proj4string(smallveg)) )
-    refcircles <- make_circles( refpoints[rep(1,length(radii))], radii=radii )
-    habcircles <- gIntersection( refcircles, crop(thisveg,3*extent(refcircles)), byid=c(TRUE,FALSE) )
-
-    plot( smallveg, col=adjustcolor(hcols[smallveg$LABEL_1],0.2) ) #, add=TRUE )
-    plot( habcircles, col=adjustcolor(refcol[vegtype],0.5), add=TRUE, border=NA )
-    lines(refcircles, lty=2 )
-    points(refpoints,pch="*", col='red')
-}
-
-```
-
------------------
-
-![drift against pop size](drift-vs-popsize.png)
-
-
 # Conclusions
 
 
 
 -----------
 
-Wildly varying predictions, depending on:
+- Adaptation in connected habitats depends on habitat shape, but only weakly.
 
-- genetic architecture
-- population density
-- what is "habitat"
-- long-distance dispersal
+- Adaptation is strongly affected by
 
-What's clear:
+    * connectivity
+    * long-distance dispersal
+    * population size
+    * ecological interactions
 
-- fast adaptation can't be from single, new mutations
-- truly isolated pockets are on their own (and have been already)
+Notes:
+
+- Allee affects?
+- Ubiquitous, polygenic variation?
+- Many habitats are patchy: are they still connected?
+- Shape of isolation by distance?
+
 
 
 Thanks!
@@ -637,5 +633,8 @@ Thanks!
 - Greg Suba (CNPS)
 - R's GIS tools: `sp`, `raster`, `rgeos`, ...
 
-An R package: github.com/petrelharp/landsim
+* NSF: ABI
+* Sloan Foundation
+
+The R package: github.com/petrelharp/landsim
 
